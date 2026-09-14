@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B2B Freight & Pallet Optimization Engine</title>
+    <style>
+        :root {
+            --bg-color: #0f172a; --card-bg: #1e293b; --accent: #38bdf8;
+            --text: #f8fafc; --muted: #94a3b8; --success: #34d399;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color); color: var(--text); margin: 0; padding: 40px 20px;
+            display: flex; justify-content: center;
+        }
+        .container { max-width: 850px; width: 100%; }
+        h1 { color: var(--accent); margin-bottom: 5px; }
+        h2 { color: var(--success); margin-top: 40px; margin-bottom: 5px; border-top: 1px solid #334155; padding-top: 30px; }
+        .subtitle { color: var(--muted); margin-bottom: 30px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .card { background: var(--card-bg); padding: 24px; border-radius: 12px; }
+        label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted); font-weight: 600; }
+        input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 16px; box-sizing: border-box; margin-bottom: 15px; }
+        input:focus { border-color: var(--accent); outline: none; }
+        .toggle-container { display: flex; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 4px; margin-bottom: 20px; }
+        .toggle-btn { flex: 1; border: none; background: transparent; color: var(--muted); padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+        .toggle-btn.active { background: var(--accent); color: #0f172a; }
+        .toggle-btn.active-pallet { background: var(--success); color: #0f172a; }
+        .results-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; padding: 24px; border-radius: 12px; margin-top: 20px; }
+        .result-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #334155; }
+        .result-row:last-child { border: none; }
+        .val { font-size: 18px; font-weight: bold; color: var(--accent); }
+        .val-pallet { font-size: 18px; font-weight: bold; color: var(--success); }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>CBM to Freight Weight Volumetric Converter</h1>
+    <p class="subtitle">Analytical B2B tool for air, ocean, and courier sea-freight scaling metrics.</p>
+    <div class="grid">
+        <div class="card">
+            <label>Measurement Framework</label>
+            <div class="toggle-container">
+                <button type="button" id="btnMetric" class="toggle-btn active" onclick="setUnitSystem('metric')">Metric (cm)</button>
+                <button type="button" id="btnImperial" class="toggle-btn" onclick="setUnitSystem('imperial')">Imperial (inches)</button>
+            </div>
+            <label for="calcMode">Freight Type</label>
+            <select id="calcMode" oninput="calculateCBM()">
+                <option value="333">Sea Freight (1:333 standard)</option>
+                <option value="167">Air Freight (1:167 IATA standard)</option>
+                <option value="200">Express Courier (1:200 standard)</option>
+            </select>
+            <label for="length" id="lblLength">Length (cm)</label>
+            <input type="number" id="length" value="100" oninput="calculateCBM()">
+            <label for="width" id="lblWidth">Width (cm)</label>
+            <input type="number" id="width" value="100" oninput="calculateCBM()">
+            <label for="height" id="lblHeight">Height (cm)</label>
+            <input type="number" id="height" value="100" oninput="calculateCBM()">
+            <label for="quantity">Quantity (Total Packages)</label>
+            <input type="number" id="quantity" value="1" oninput="calculateCBM()">
+        </div>
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="results-box">
+                <div class="result-row"><span>Total Volume (CBM):</span><span id="resCBM" class="val">1.000</span></div>
+                <div class="result-row"><span>Total Volume (CFT):</span><span id="resCFT" class="val">35.31</span></div>
+                <div class="result-row"><span>Volumetric Weight (Kg):</span><span id="resVolWeight" class="val">333.00</span></div>
+                <div class="result-row" style="border-top: 1px dashed #334155; margin-top: 5px; padding-top: 15px;">
+                    <span>Volumetric Weight (Lbs):</span><span id="resVolWeightLbs" class="val">734.14</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2>Pallet Packing & Loading Optimization Grid</h2>
+    <p class="subtitle">Calculates spatial layout capacity metrics for standard industrial shipping tiers.</p>
+    <div class="grid">
+        <div class="card">
+            <label>Pallet Specification Class</label>
+            <div class="toggle-container">
+                <button type="button" id="btnUSPallet" class="toggle-btn active-pallet" onclick="setPalletType('us')">Standard US (48x40 in)</button>
+                <button type="button" id="btnEUPallet" class="toggle-btn" onclick="setPalletType('eu')">Euro Pallet (120x80 cm)</button>
+            </div>
+            <label for="boxLength" id="lblBoxL">Box Length (inches)</label>
+            <input type="number" id="boxLength" value="12" oninput="calculatePallet()">
+            <label for="boxWidth" id="lblBoxW">Box Width (inches)</label>
+            <input type="number" id="boxWidth" value="10" oninput="calculatePallet()">
+            <label for="maxHeight" id="lblMaxH">Max Allowable Stack Height (inches)</label>
+            <input type="number" id="maxHeight" value="50" oninput="calculatePallet()">
+            <label for="boxHeight" id="lblBoxH">Individual Box Height (inches)</label>
+            <input type="number" id="boxHeight" value="10" oninput="calculatePallet()">
+        </div>
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="results-box" style="border-color: #065f46;">
+                <div class="result-row"><span>Boxes Per Layer (Floor Pattern):</span><span id="boxesPerLayer" class="val-pallet">16</span></div>
+                <div class="result-row"><span>Max Vertical Stack Layers:</span><span id="stackLayers" class="val-pallet">5</span></div>
+                <div class="result-row" style="border-top: 1px dashed #065f46; margin-top: 5px; padding-top: 15px;">
+                    <span>Total Max Boxes Per Pallet:</span><span id="totalBoxesPerPallet" class="val-pallet" style="font-size: 24px;">80</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUnitSystem = 'metric';
+let activePalletType = 'us';
+
+function setUnitSystem(system) {
+    currentUnitSystem = system;
+    document.getElementById('btnMetric').classList.toggle('active', system === 'metric');
+    document.getElementById('btnImperial').classList.toggle('active', system === 'imperial');
+    if (system === 'metric') {
+        document.getElementById('lblLength').innerText = "Length (cm)";
+        document.getElementById('lblWidth').innerText = "Width (cm)";
+        document.getElementById('lblHeight').innerText = "Height (cm)";
+    } else {
+        document.getElementById('lblLength').innerText = "Length (inches)";
+        document.getElementById('lblWidth').innerText = "Width (inches)";
+        document.getElementById('lblHeight').innerText = "Height (inches)";
+    }
+    calculateCBM();
+}
+
+function setPalletType(type) {
+    activePalletType = type;
+    document.getElementById('btnUSPallet').classList.toggle('active-pallet', type === 'us');
+    document.getElementById('btnEUPallet').classList.toggle('active-pallet', type === 'eu');
+    if (type === 'us') {
+        document.getElementById('lblBoxL').innerText = "Box Length (inches)";
+        document.getElementById('lblBoxW').innerText = "Box Width (inches)";
+        document.getElementById('lblMaxH').innerText = "Max Allowable Stack Height (inches)";
+        document.getElementById('lblBoxH').innerText = "Individual Box Height (inches)";
+    } else {
+        document.getElementById('lblBoxL').innerText = "Box Length (cm)";
+        document.getElementById('lblBoxW').innerText = "Box Width (cm)";
+        document.getElementById('lblMaxH').innerText = "Max Allowable Stack Height (cm)";
+        document.getElementById('lblBoxH').innerText = "Individual Box Height (cm)";
+    }
+    calculatePallet();
+}
+
+function calculateCBM() {
+    const ratio = parseFloat(document.getElementById('calcMode').value);
+    const L = parseFloat(document.getElementById('length').value) || 0;
+    const W = parseFloat(document.getElementById('width').value) || 0;
+    const H = parseFloat(document.getElementById('height').value) || 0;
+    const Q = parseFloat(document.getElementById('quantity').value) || 1;
+    const CFT_CONVERSION_FACTOR = 35.3147; const LBS_CONVERSION_FACTOR = 2.20462; const INCHES_TO_CM_FACTOR = 2.54;
+    let totalCBM = 0;
+    if (currentUnitSystem === 'metric') {
+        totalCBM = (L * W * H / 1000000) * Q;
+    } else {
+        const lengthCm = L * INCHES_TO_CM_FACTOR; const widthCm = W * INCHES_TO_CM_FACTOR; const heightCm = H * INCHES_TO_CM_FACTOR;
+        totalCBM = (lengthCm * widthCm * heightCm / 1000000) * Q;
+    }
+    const totalCFT = totalCBM * CFT_CONVERSION_FACTOR;
+    const volumetricWeightKg = totalCBM * ratio;
+    const volumetricWeightLbs = volumetricWeightKg * LBS_CONVERSION_FACTOR;
+    document.getElementById('resCBM').innerText = totalCBM.toLocaleString(undefined, {minimumFractionDigits: 3, maximumFractionDigits: 3});
+    document.getElementById('resCFT').innerText = totalCFT.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resVolWeight').innerText = volumetricWeightKg.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('resVolWeightLbs').innerText = volumetricWeightLbs.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+function calculatePallet() {
+    const bL = parseFloat(document.getElementById('boxLength').value) || 0;
+    const bW = parseFloat(document.getElementById('boxWidth').value) || 0;
+    const mH = parseFloat(document.getElementById('maxHeight').value) || 0;
+    const bH = parseFloat(document.getElementById('boxHeight').value) || 0;
+    if (bL <= 0 || bW <= 0 || bH <= 0 || mH <= 0) return;
+    let pL = (activePalletType === 'us') ? 48 : 120;
+    let pW = (activePalletType === 'us') ? 40 : 80;
+    const pattern1 = Math.floor(pL / bL) * Math.floor(pW / bW);
+    const pattern2 = Math.floor(pL / bW) * Math.floor(pW / bL);
+    const boxesPerLayer = Math.max(pattern1, pattern2);
+    const stackLayers = Math.floor(mH / bH);
+    const totalBoxes = boxesPerLayer * stackLayers;
+    document.getElementById('boxesPerLayer').innerText = boxesPerLayer.toLocaleString();
+    document.getElementById('stackLayers').innerText = stackLayers.toLocaleString();
+    document.getElementById('totalBoxesPerPallet').innerText = totalBoxes.toLocaleString();
+}
+
+calculateCBM();
+calculatePallet();
+</script>
+</body>
+</html>
