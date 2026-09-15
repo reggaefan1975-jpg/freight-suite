@@ -1,41 +1,46 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>B2B Freight & Pallet Optimization Engine</title>
+    <title>B2B Freight, Pallet & Truck Loading Suite</title>
     <style>
         :root {
             --bg-color: #0f172a; --card-bg: #1e293b; --accent: #38bdf8;
-            --text: #f8fafc; --muted: #94a3b8; --success: #34d399;
+            --text: #f8fafc; --muted: #94a3b8; --success: #34d399; --warning: #f59e0b;
         }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color); color: var(--text); margin: 0; padding: 40px 20px;
             display: flex; justify-content: center;
         }
         .container { max-width: 850px; width: 100%; }
         h1 { color: var(--accent); margin-bottom: 5px; }
-        h2 { color: var(--success); margin-top: 40px; margin-bottom: 5px; border-top: 1px solid #334155; padding-top: 30px; }
+        h2 { margin-top: 40px; margin-bottom: 5px; border-top: 1px solid #334155; padding-top: 30px; }
+        h2.pallet-title { color: var(--success); }
+        h2.truck-title { color: var(--warning); }
         .subtitle { color: var(--muted); margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-        .card { background: var(--card-bg); padding: 24px; border-radius: 12px; }
+        .card { background: var(--card-bg); padding: 24px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--muted); font-weight: 600; }
         input, select { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 6px; color: white; font-size: 16px; box-sizing: border-box; margin-bottom: 15px; }
         input:focus { border-color: var(--accent); outline: none; }
         .toggle-container { display: flex; background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 4px; margin-bottom: 20px; }
-        .toggle-btn { flex: 1; border: none; background: transparent; color: var(--muted); padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; }
+        .toggle-btn { flex: 1; border: none; background: transparent; color: var(--muted); padding: 10px; font-weight: 600; cursor: pointer; border-radius: 4px; transition: all 0.2s ease; }
         .toggle-btn.active { background: var(--accent); color: #0f172a; }
         .toggle-btn.active-pallet { background: var(--success); color: #0f172a; }
+        .toggle-btn.active-truck { background: var(--warning); color: #0f172a; }
         .results-box { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155; padding: 24px; border-radius: 12px; margin-top: 20px; }
         .result-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #334155; }
         .result-row:last-child { border: none; }
         .val { font-size: 18px; font-weight: bold; color: var(--accent); }
         .val-pallet { font-size: 18px; font-weight: bold; color: var(--success); }
+        .val-truck { font-size: 18px; font-weight: bold; color: var(--warning); }
     </style>
 </head>
 <body>
 <div class="container">
+    <!-- TOOL #1: CBM ENGINE -->
     <h1>CBM to Freight Weight Volumetric Converter</h1>
     <p class="subtitle">Analytical B2B tool for air, ocean, and courier sea-freight scaling metrics.</p>
     <div class="grid">
@@ -51,14 +56,10 @@
                 <option value="167">Air Freight (1:167 IATA standard)</option>
                 <option value="200">Express Courier (1:200 standard)</option>
             </select>
-            <label for="length" id="lblLength">Length (cm)</label>
-            <input type="number" id="length" value="100" oninput="calculateCBM()">
-            <label for="width" id="lblWidth">Width (cm)</label>
-            <input type="number" id="width" value="100" oninput="calculateCBM()">
-            <label for="height" id="lblHeight">Height (cm)</label>
-            <input type="number" id="height" value="100" oninput="calculateCBM()">
-            <label for="quantity">Quantity (Total Packages)</label>
-            <input type="number" id="quantity" value="1" oninput="calculateCBM()">
+            <label for="length" id="lblLength">Length (cm)</label><input type="number" id="length" value="100" oninput="calculateCBM()">
+            <label for="width" id="lblWidth">Width (cm)</label><input type="number" id="width" value="100" oninput="calculateCBM()">
+            <label for="height" id="lblHeight">Height (cm)</label><input type="number" id="height" value="100" oninput="calculateCBM()">
+            <label for="quantity">Quantity (Total Packages)</label><input type="number" id="quantity" value="1" oninput="calculateCBM()">
         </div>
         <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
             <div class="results-box">
@@ -71,7 +72,9 @@
             </div>
         </div>
     </div>
-    <h2>Pallet Packing & Loading Optimization Grid</h2>
+
+    <!-- TOOL #2: PALLET OPTIMIZER ENGINE -->
+    <h2 class="pallet-title">Pallet Packing & Loading Optimization Grid</h2>
     <p class="subtitle">Calculates spatial layout capacity metrics for standard industrial shipping tiers.</p>
     <div class="grid">
         <div class="card">
@@ -80,14 +83,10 @@
                 <button type="button" id="btnUSPallet" class="toggle-btn active-pallet" onclick="setPalletType('us')">Standard US (48x40 in)</button>
                 <button type="button" id="btnEUPallet" class="toggle-btn" onclick="setPalletType('eu')">Euro Pallet (120x80 cm)</button>
             </div>
-            <label for="boxLength" id="lblBoxL">Box Length (inches)</label>
-            <input type="number" id="boxLength" value="12" oninput="calculatePallet()">
-            <label for="boxWidth" id="lblBoxW">Box Width (inches)</label>
-            <input type="number" id="boxWidth" value="10" oninput="calculatePallet()">
-            <label for="maxHeight" id="lblMaxH">Max Allowable Stack Height (inches)</label>
-            <input type="number" id="maxHeight" value="50" oninput="calculatePallet()">
-            <label for="boxHeight" id="lblBoxH">Individual Box Height (inches)</label>
-            <input type="number" id="boxHeight" value="10" oninput="calculatePallet()">
+            <label for="boxLength" id="lblBoxL">Box Length (inches)</label><input type="number" id="boxLength" value="12" oninput="calculatePallet()">
+            <label for="boxWidth" id="lblBoxW">Box Width (inches)</label><input type="number" id="boxWidth" value="10" oninput="calculatePallet()">
+            <label for="maxHeight" id="lblMaxH">Max Allowable Stack Height (inches)</label><input type="number" id="maxHeight" value="50" oninput="calculatePallet()">
+            <label for="boxHeight" id="lblBoxH">Individual Box Height (inches)</label><input type="number" id="boxHeight" value="10" oninput="calculatePallet()">
         </div>
         <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
             <div class="results-box" style="border-color: #065f46;">
@@ -99,11 +98,47 @@
             </div>
         </div>
     </div>
+
+    <!-- TOOL #3: TRUCK PALLET CAPACITY OPTIMIZER (WITH GLOBAL METRIC TOGGLE) -->
+    <h2 class="truck-title">How Many Pallets Fit in a Truck & Capacity Floor Optimizer</h2>
+    <p class="subtitle">Optimizes linear floor allocation patterns for commercial box trucks and van fleets globally.</p>
+    <div class="grid">
+        <div class="card">
+            <label>Measurement Framework</label>
+            <div class="toggle-container">
+                <button type="button" id="btnTruckImperial" class="toggle-btn active-truck" onclick="setTruckUnitSystem('imperial')">Imperial (inches/ft)</button>
+                <button type="button" id="btnTruckMetric" class="toggle-btn" onclick="setTruckUnitSystem('metric')">Metric (cm/meters)</button>
+            </div>
+            <label>Commercial Vehicle Fleet Class</label>
+            <select id="truckSize" onchange="updateTruckLength()">
+                <!-- Options populated dynamically via JavaScript depending on selected unit style -->
+            </select>
+            <label for="truckLengthInput" id="lblTruckL">Vehicle Bed Length (inches)</label><input type="number" id="truckLengthInput" value="312" oninput="calculateTruckSpace()">
+            <label for="palletLengthInput" id="lblPalletL">Pallet Length / Depth (inches)</label><input type="number" id="palletLengthInput" value="48" oninput="calculateTruckSpace()">
+            <label for="palletWidthInput" id="lblPalletW">Pallet Width (inches)</label><input type="number" id="palletWidthInput" value="40" oninput="calculateTruckSpace()">
+            <label>Loading Row Blueprint</label>
+            <div class="toggle-container">
+                <button type="button" id="btnSingleRow" class="toggle-btn active-truck" onclick="setTruckRowStyle('single')">Single Row Loading</button>
+                <button type="button" id="btnDoubleRow" class="toggle-btn" onclick="setTruckRowStyle('double')">Side-by-Side (Double Row)</button>
+            </div>
+        </div>
+        <div class="card" style="display: flex; flex-direction: column; justify-content: center;">
+            <div class="results-box" style="border-color: #b45309;">
+                <div class="result-row"><span>Total Pallets Capacity:</span><span id="truckPalletCap" class="val-truck" style="font-size: 24px;">6</span></div>
+                <div class="result-row"><span>Linear Floor Space Consumed:</span><span id="truckSpaceUsed" class="val-truck">24.0 ft</span></div>
+                <div class="result-row" style="border-top: 1px dashed #b45309; margin-top: 5px; padding-top: 15px;">
+                    <span>Remaining Floor Clearance:</span><span id="truckSpaceLeft" class="val-truck">24.0 inches</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
 let currentUnitSystem = 'metric';
 let activePalletType = 'us';
+let truckUnitSystem = 'imperial';
+let truckRowStyle = 'single';
 
 function setUnitSystem(system) {
     currentUnitSystem = system;
@@ -137,6 +172,62 @@ function setPalletType(type) {
         document.getElementById('lblBoxH').innerText = "Individual Box Height (cm)";
     }
     calculatePallet();
+}
+
+function setTruckUnitSystem(system) {
+    truckUnitSystem = system;
+    document.getElementById('btnTruckImperial').classList.toggle('active-truck', system === 'imperial');
+    document.getElementById('btnTruckMetric').classList.toggle('active-truck', system === 'metric');
+
+    const sizeSelect = document.getElementById('truckSize');
+    sizeSelect.innerHTML = ""; // Clear existing drop menus
+
+    if (system === 'imperial') {
+        document.getElementById('lblTruckL').innerText = "Vehicle Bed Length (inches)";
+        document.getElementById('lblPalletL').innerText = "Pallet Length / Depth (inches)";
+        document.getElementById('lblPalletW').innerText = "Pallet Width (inches)";
+
+        // Populate standard US vehicle sizes
+        sizeSelect.options.add(new Option('26-Foot Box Truck (312" Floor)', '312'));
+        sizeSelect.options.add(new Option('24-Foot Box Truck (288" Floor)', '288'));
+        sizeSelect.options.add(new Option('16-Foot Box Truck (192" Floor)', '192'));
+        sizeSelect.options.add(new Option('53-Foot Semi-Trailer (636" Floor)', '636'));
+        sizeSelect.options.add(new Option('Custom Specified Length (inches)', 'custom'));
+
+        document.getElementById('truckLengthInput').value = "312";
+        document.getElementById('palletLengthInput').value = "48";
+        document.getElementById('palletWidthInput').value = "40";
+    } else {
+        document.getElementById('lblTruckL').innerText = "Vehicle Bed Length (cm)";
+        document.getElementById('lblPalletL').innerText = "Pallet Length / Depth (cm)";
+        document.getElementById('lblPalletW').innerText = "Pallet Width (cm)";
+
+        // Populate standard Metric/Euro international vehicle sizes
+        sizeSelect.options.add(new Option('7.5m Standard Rigid Truck (750 cm Floor)', '750'));
+        sizeSelect.options.add(new Option('13.6m Standard Euro Trailer (1360 cm Floor)', '1360'));
+        sizeSelect.options.add(new Option('Sprinter Delivery Van (430 cm Floor)', '430'));
+        sizeSelect.options.add(new Option('Custom Specified Length (cm)', 'custom'));
+
+        document.getElementById('truckLengthInput').value = "750";
+        document.getElementById('palletLengthInput').value = "120";
+        document.getElementById('palletWidthInput').value = "80";
+    }
+    calculateTruckSpace();
+}
+
+function setTruckRowStyle(style) {
+    truckRowStyle = style;
+    document.getElementById('btnSingleRow').classList.toggle('active-truck', style === 'single');
+    document.getElementById('btnDoubleRow').classList.toggle('active-truck', style === 'double');
+    calculateTruckSpace();
+}
+
+function updateTruckLength() {
+    const selection = document.getElementById('truckSize').value;
+    if (selection !== 'custom') {
+        document.getElementById('truckLengthInput').value = selection;
+    }
+    calculateTruckSpace();
 }
 
 function calculateCBM() {
@@ -180,8 +271,31 @@ function calculatePallet() {
     document.getElementById('totalBoxesPerPallet').innerText = totalBoxes.toLocaleString();
 }
 
+function calculateTruckSpace() {
+    const tL = parseFloat(document.getElementById('truckLengthInput').value) || 0;
+    const pL = parseFloat(document.getElementById('palletLengthInput').value) || 0;
+    const pW = parseFloat(document.getElementById('palletWidthInput').value) || 0;
+    if (tL <= 0 || pL <= 0) return;
+
+    const singleRowPallets = Math.floor(tL / pL);
+    const totalPallets = (truckRowStyle === 'single') ? singleRowPallets : (singleRowPallets * 2);
+    const linearUnitsUsed = singleRowPallets * pL;
+    const clearanceLeft = tL - linearUnitsUsed;
+
+    if (truckUnitSystem === 'imperial') {
+        document.getElementById('truckSpaceUsed').innerText = (linearUnitsUsed / 12).toFixed(1) + " ft";
+        document.getElementById('truckSpaceLeft').innerText = clearanceLeft.toFixed(1) + " inches";
+    } else {
+        document.getElementById('truckSpaceUsed').innerText = (linearUnitsUsed / 100).toFixed(2) + " meters";
+        document.getElementById('truckSpaceLeft').innerText = clearanceLeft.toFixed(1) + " cm";
+    }
+    document.getElementById('truckPalletCap').innerText = totalPallets.toLocaleString();
+}
+
+// Global Core App Initialization Sequence
 calculateCBM();
 calculatePallet();
+setTruckUnitSystem('imperial'); // Start user interface on standard target layout
 </script>
 </body>
 </html>
